@@ -1,11 +1,8 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
 	"fmt"
+	"github.com/ivankoTut/go-alerts"
 	"github.com/ivankoTut/nltools/helpers"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
@@ -32,6 +29,8 @@ var appCmd = &cobra.Command{
 		restartsContainers(cmd)
 		disableService(cmd)
 		enableService(cmd)
+		stopService(cmd)
+		startService(cmd)
 	},
 }
 
@@ -42,8 +41,30 @@ func init() {
 	appCmd.Flags().BoolP("show-stable", "s", false, "Показать сервисы не работающие локально")
 	appCmd.Flags().BoolP("table", "t", true, "Не печатать в табличном виде")
 	appCmd.Flags().BoolP("restart", "r", false, "Перезапустить контейнеры (./nlrun stop && ./nlrun)")
+	appCmd.Flags().BoolP("stop", "S", false, "Остановить сервисы (./nlrun stop)")
+	appCmd.Flags().BoolP("start", "T", false, "Запустить сервисы (./nlrun)")
 	appCmd.Flags().String("disable", "", "Переключить сервис в режим stable")
 	appCmd.Flags().String("enable", "", "Переключить сервис в режим dev")
+}
+
+func startService(cmd *cobra.Command) {
+	isStop, _ := cmd.Flags().GetBool("start")
+	if isStop == false {
+		return
+	}
+	alerts.CreateBlock("Запуск сервисов ....", "", helpers.NoticeTheme)
+	helpers.StartServices()
+	alerts.CreateBlock("Сервисы успешно запущены", "", helpers.NoticeTheme)
+}
+
+func stopService(cmd *cobra.Command) {
+	isStop, _ := cmd.Flags().GetBool("stop")
+	if isStop == false {
+		return
+	}
+	alerts.CreateBlock("Остановка сервисов ....", "", helpers.NoticeTheme)
+	helpers.StopServices()
+	alerts.CreateBlock("Сервисы успешно остановлены ....", "", helpers.NoticeTheme)
 }
 
 func enableService(cmd *cobra.Command) {

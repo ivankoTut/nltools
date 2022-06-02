@@ -1,15 +1,16 @@
 package helpers
 
 import (
-	"fmt"
+	"github.com/ivankoTut/go-alerts"
 	"github.com/spf13/viper"
 	"log"
 	"os/exec"
 )
 
 var (
-	ModeStable = "stable"
-	ModeDev    = "dev"
+	ModeStable  = "stable"
+	ModeDev     = "dev"
+	NoticeTheme *alerts.Color
 )
 
 //Config Представление файла конфигурации в dev-server
@@ -27,6 +28,13 @@ type ApplicationConfig struct {
 type GitlabConfig struct {
 	BaseUrl string `yaml:"baseUrl"`
 	Token   string `yaml:"token"`
+}
+
+func init() {
+	NoticeTheme, _ = alerts.CreateColor("yellow", "default", []string{"bold"})
+	NoticeTheme.
+		PrintPaddingBottom(false).
+		PrintPaddingTop(false)
 }
 
 func DisableService(serviceName string) error {
@@ -84,25 +92,33 @@ func IsExistService(serviceName string, mode string) bool {
 }
 
 func RestartServices() {
-	fmt.Println("Остановка сервисов ....")
-	qwe := exec.Command("nlrun", "stop")
-	qwe.Dir = viper.GetString("rootDit")
-	_, err := qwe.Output()
+	alerts.CreateBlock("Остановка сервисов ....", "", NoticeTheme)
+	StopServices()
+
+	alerts.CreateBlock("Запуск сервисов ....", "", NoticeTheme)
+	StartServices()
+
+	alerts.CreateBlock("Сервисы успешно запущены", "", NoticeTheme)
+}
+
+func StartServices() {
+	nlRunStart := exec.Command("nlrun")
+	nlRunStart.Dir = viper.GetString("rootDit")
+	_, err := nlRunStart.Output()
 
 	if err != nil {
-		fmt.Println(err.Error())
+		alerts.Error(err.Error())
 		return
 	}
-	// Print the output
-	fmt.Println("Запуск сервисов ....")
+}
 
-	qwe = exec.Command("nlrun")
-	qwe.Dir = viper.GetString("rootDit")
-	_, err = qwe.Output()
+func StopServices() {
+	nlRunStop := exec.Command("nlrun", "stop")
+	nlRunStop.Dir = viper.GetString("rootDit")
+	_, err := nlRunStop.Output()
 
 	if err != nil {
-		fmt.Println(err.Error())
+		alerts.Error(err.Error())
 		return
 	}
-	fmt.Println("Сервисы перезапущены")
 }
